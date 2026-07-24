@@ -44,6 +44,7 @@ BARK_TEST = f"{CWD}/bark_test"
 BARK_DIR = f"{CWD}/.bark"
 HASH = f"{BARK_DIR}/hash"
 
+FIELD = "▍"
 DIV = "┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈"
 COL_RED = "\033[1;31m"
 COL_GREEN = "\033[1;32m"
@@ -192,11 +193,13 @@ def cmd_help():
 
 def comparison_failure_print(name: str, old_line: str, new_line: str):
     """helper - cmd_compare()"""
-    msg_error(f"'{name}'", quit=False, details=False)
     l = f"{COL_RED}▍{COL_RESET}"
-    print(f"{l}         ")
-    print(f"{l}        expected: '{old_line}'")
-    print(f"{l}        recieved: '{new_line}'")
+    ol = old_line[:-1] if old_line[-1] == "\n" else old_line
+    nl = new_line[:-1] if new_line[-1] == "\n" else new_line
+    msg_error(f"'{name}'", quit=False, details=False)
+    print(f"{l}")
+    print(f"{l:<20}expected: '{ol}'")
+    print(f"{l:<20}recieved: '{nl}'")
     print(f"")
 
 def compare_results_table(results: list[tuple[bool, Test]]) -> None:
@@ -209,7 +212,7 @@ def compare_results_table(results: list[tuple[bool, Test]]) -> None:
     success_rate = 100 if failures == 0 else failures / len(results) * 100
 
     for failed, test in results:
-        status = f"{COL_RED}" if failed else f"{COL_GREEN}"
+        status = f"{COL_RED}X - " if failed else f"{COL_GREEN}O - "
         print(f"{status}{test.name}{COL_RESET}")
     print("")
     print(f"Success rate: {success_rate}%")
@@ -224,11 +227,7 @@ def cmd_compare():
     results: list[tuple[bool, Test]] = []
 
     for n, o in zip(new_tests, old_tests):
-        # print("")
-        # msg_info(f"testing '{n.name}'...")
-
         failed = False
-
         if n.stdout != o.stdout:
             comparison_failure_print(
                     name=n.name,
