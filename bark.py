@@ -36,8 +36,11 @@ Requirements: Python 3.10+
 """
 
 import sys, subprocess, os, shutil, hashlib
+from datetime import datetime as dt
 from dataclasses import dataclass
 from pathlib import Path
+
+GLBL_START_TIME = dt.now()
 
 CWD = "."
 BARK_TEST = f"{CWD}/bark_test"
@@ -202,6 +205,10 @@ def comparison_failure_print(name: str, old_line: str, new_line: str):
     print(f"{l:<20}recieved: '{nl}'")
     print(f"")
 
+def time_total():
+    now = dt.now()
+    return (now - GLBL_START_TIME).total_seconds()
+
 def compare_results_table(results: list[tuple[bool, Test]]) -> None:
     """helper - cmd_compare()"""
     print(DIV)
@@ -214,7 +221,8 @@ def compare_results_table(results: list[tuple[bool, Test]]) -> None:
     for failed, test in results:
         status = f"{COL_RED}X - " if failed else f"{COL_GREEN}O - "
         print(f"{status}{test.name}{COL_RESET}")
-    print(f"\nSuccess rate: {success_rate}%")
+    print(f"\nSuccess rate  : {success_rate}%")
+    print(f"Total time    : {time_total():.4} sec")
     print(DIV)
 
 def cmd_compare():
