@@ -75,9 +75,9 @@ compare
 Within the directory of your `bark_test` file, you run `./bark.py record` to
 record the output of your tests and generate a folder `.bark`.  
   
-Then whenever you want to run a test later on in your development process you
-simply `cd` back into the directory of your `bark_test` file and run `./bark.py compare` to compare your current output with the one you had previously
-recorded.
+Once you've progressed enough in your development process to warrant a test, you
+simply `cd` back into the directory of your `bark_test` file and run `./bark.py
+compare` - to compare your current output with what you had previously recorded.
     
 ---
 <div id="license"></div>
