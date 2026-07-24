@@ -45,8 +45,8 @@ BARK_DIR = f"{CWD}/.bark"
 HASH = f"{BARK_DIR}/hash"
 
 COL_RED = "\033[1;31m"
-COL_GREEN = "\033[32m"
-COL_BLUE = "\033[34m"
+COL_GREEN = "\033[1;32m"
+COL_BLUE = "\033[1;34m"
 COL_RESET = "\033[0m"
 
 _HELP_STR = """
@@ -58,8 +58,7 @@ _HELP_STR = """
     ./bark.py compare
         * Runs the same file of shell commands again and compares their
           stdout/err to their recorded counterparts in the '.bark' directory.
-        * Generates a git-style diff to preview errors in the case of a mismatch.
-        * Generates a pretty table summarizing each test."""
+        * Prints a summary."""
 
 def msg_info(s: str):
     """debug"""
@@ -202,9 +201,17 @@ def comparison_failure_print(name: str, old_line: str, new_line: str):
 def compare_results_table(results: list[tuple[bool, Test]]) -> None:
     """helper - cmd_compare()"""
     print("------")
+
+    failures = 0
+    for failed, _ in results:
+        failures += 1 if failed else 0
+    success_rate = failures / len(results) * 100
+
     for failed, test in results:
-        status = f"{COL_RED}X{COL_RESET}" if failed else f"{COL_GREEN}O{COL_RESET}"
+        status = f"{COL_RED}X{COL_RESET}" if failed else f"{COL_GREEN}-{COL_RESET}"
         print(f"{status} {test.name}")
+    print("")
+    print(f"Success rate: {success_rate}%")
     print("------")
 
 def cmd_compare():
