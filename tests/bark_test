@@ -1,0 +1,2 @@
+no arguments  |  gcc -o main main.c && ./main
+with an argument | clang -o main main.c && ./main --help

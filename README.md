@@ -79,6 +79,8 @@ Once you've progressed enough in your development process to warrant a test, you
 simply `cd` back into the directory of your `bark_test` file and run `./bark.py
 compare` - to compare your current output with what you had previously recorded.
     
+See the [tests](./tests) directory for a simple showcase
+  
 ---
 <div id="license"></div>
   
