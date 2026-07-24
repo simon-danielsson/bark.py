@@ -44,6 +44,7 @@ BARK_TEST = f"{CWD}/bark_test"
 BARK_DIR = f"{CWD}/.bark"
 HASH = f"{BARK_DIR}/hash"
 
+DIV = "┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈"
 COL_RED = "\033[1;31m"
 COL_GREEN = "\033[1;32m"
 COL_BLUE = "\033[1;34m"
@@ -148,7 +149,7 @@ def retrieve_new_tests() -> list[Test]:
     for i, l in enumerate(f):
         name, command = l.split("|")
         test_cmd = command[:-1].split(" ")
-        tests.append(Test(shell_cmd=test_cmd, name=name, id=i))
+        tests.append(Test(shell_cmd=test_cmd, name=name.strip(), id=i))
     return tests
 
 def generate_hash_from_file(file: str) -> str:
@@ -192,7 +193,7 @@ def cmd_help():
 def comparison_failure_print(name: str, old_line: str, new_line: str):
     """helper - cmd_compare()"""
     msg_error(f"'{name}'", quit=False, details=False)
-    l = f"{COL_RED}┃{COL_RESET}"
+    l = f"{COL_RED}▍{COL_RESET}"
     print(f"{l}         ")
     print(f"{l}        expected: '{old_line}'")
     print(f"{l}        recieved: '{new_line}'")
@@ -200,19 +201,19 @@ def comparison_failure_print(name: str, old_line: str, new_line: str):
 
 def compare_results_table(results: list[tuple[bool, Test]]) -> None:
     """helper - cmd_compare()"""
-    print("------")
+    print(DIV)
 
     failures = 0
     for failed, _ in results:
         failures += 1 if failed else 0
-    success_rate = failures / len(results) * 100
+    success_rate = 100 if failures == 0 else failures / len(results) * 100
 
     for failed, test in results:
-        status = f"{COL_RED}X{COL_RESET}" if failed else f"{COL_GREEN}-{COL_RESET}"
-        print(f"{status} {test.name}")
+        status = f"{COL_RED}" if failed else f"{COL_GREEN}"
+        print(f"{status}{test.name}{COL_RESET}")
     print("")
     print(f"Success rate: {success_rate}%")
-    print("------")
+    print(DIV)
 
 def cmd_compare():
     new_tests = retrieve_new_tests()
@@ -223,21 +224,23 @@ def cmd_compare():
     results: list[tuple[bool, Test]] = []
 
     for n, o in zip(new_tests, old_tests):
+        # print("")
+        # msg_info(f"testing '{n.name}'...")
+
         failed = False
 
-        for nl, ol in zip(n.stdout.splitlines(), o.stdout.splitlines()):
-            msg_info(f"testing '{n.name}'...")
-
-            if nl != ol:
-                comparison_failure_print(name=n.name, new_line=nl, old_line=ol)
-                failed = True
-                break
+        if n.stdout != o.stdout:
+            comparison_failure_print(
+                    name=n.name,
+                    old_line=o.stdout,
+                    new_line=n.stdout,
+                    )
+            failed = True
+        else:
+            msg_succ(f"'{n.name}'")
 
         results.append((failed, n))
-        if failed:
-            continue
 
-    msg_succ(f"'{n.name}'")
     compare_results_table(results)
 
 def main():
