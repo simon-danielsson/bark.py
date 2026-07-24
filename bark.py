@@ -38,12 +38,16 @@ Requirements: Python 3.10+
 import sys, subprocess, os, shutil, hashlib
 from dataclasses import dataclass
 from pathlib import Path
-from enum import StrEnum
 
 CWD = "."
 BARK_TEST = f"{CWD}/bark_test"
 BARK_DIR = f"{CWD}/.bark"
 HASH = f"{BARK_DIR}/hash"
+
+COL_RED = "\033[1;31m"
+COL_GREEN = "\033[32m"
+COL_BLUE = "\033[34m"
+COL_RESET = "\033[0m"
 
 _HELP_STR = """
     ./bark.py record
@@ -59,16 +63,20 @@ _HELP_STR = """
 
 def msg_info(s: str):
     """debug"""
-    print(f"INFO:    {s}")
+    print(f"{COL_BLUE}INFO{COL_RESET}     {s}")
 
 def msg_succ(s: str):
     """debug"""
-    print(f"SUCCESS: {s}")
+    print(f"{COL_GREEN}SUCCESS{COL_RESET}  {s}")
 
-def msg_error(s: str):
-    """debug - also quits the program with exit code 1"""
-    print(f"FAILURE: {s} -- use 'bark.py -h' for more details")
-    sys.exit(1)
+def msg_error(s: str, quit: bool, details: bool):
+    d = ""
+    if details:
+        d = " -- use 'bark.py -h' for more details"
+
+    print(f"{COL_RED}FAILURE{COL_RESET}  {s}{d}")
+    if quit:
+        sys.exit(1)
 
 @dataclass
 class Test:
@@ -83,6 +91,8 @@ class Test:
     def launch_cmd(self, debug_print: bool):
         """helper - cmd_record()"""
         try:
+            if debug_print:
+                msg_info(f"processing '{self.name}'...")
             self.stdout = subprocess.run(
                     shell=True,
                     args=self.shell_cmd_as_str(),
@@ -90,23 +100,31 @@ class Test:
                     stderr=subprocess.STDOUT,
                     text=True,
                     ).stdout
-            if debug_print:
-                msg_succ(f"processed: '{self.shell_cmd_as_str()}'")
         except FileNotFoundError:
-            msg_error(f"file not found '{self.shell_cmd_as_str()}'")
+            msg_error(
+                    f"file not found '{self.shell_cmd_as_str()}'", quit=True, details=True
+                    )
         except subprocess.CalledProcessError as e:
-            msg_error(f"failed to execute '{self.shell_cmd_as_str()}': {e}")
+            msg_error(
+                    f"failed to execute '{self.shell_cmd_as_str()}': {e}",
+                    quit=True,
+                    details=True,
+                    )
 
 def read_file(file: str | Path) -> list[str]:
     try:
         f = open(file, "r").readlines()
     except OSError:
-        msg_error(f"failed to open '{file}' (must be inside working dir)")
+        msg_error(
+                f"failed to open '{file}' (must be inside working dir)",
+                quit=True,
+                details=False,
+                )
     return f
 
 def retrieve_old_tests() -> list[Test]:
     if not os.path.exists(BARK_DIR):
-        msg_error(f"dir '{BARK_DIR}' doesn't exist")
+        msg_error(f"dir '{BARK_DIR}' doesn't exist", quit=True, details=True)
 
     tests = []
     for child in Path(BARK_DIR).iterdir():
@@ -144,7 +162,9 @@ def _compare_hash() -> None:
     with open(HASH, "r", encoding="utf-8") as f:
         old_hash = f.read().strip()
     if current_hash != old_hash:
-        msg_error(f"'{BARK_TEST}' has changed since last recording")
+        msg_error(
+                f"'{BARK_TEST}' has changed since last recording", quit=True, details=False
+                )
 
 def store_test_results(tests: list[Test]):
     """helper - cmd_record()"""
@@ -160,41 +180,63 @@ def store_test_results(tests: list[Test]):
         f.write(generate_hash_from_file(BARK_TEST))
 
 def cmd_record():
+    """helper - cmd_record()"""
     tests = retrieve_new_tests()
     for t in tests:
         t.launch_cmd(debug_print=True)
     store_test_results(tests)
-    msg_succ("a new snapshot was written successfully!")
+    msg_succ("new snapshot written successfully")
 
 def cmd_help():
     print(_HELP_STR[1:])
 
-class TestStatus(StrEnum):
-    FAILURE = "FAILURE"
-    SUCCESS = "SUCCESS"
+def comparison_failure_print(name: str, old_line: str, new_line: str):
+    """helper - cmd_compare()"""
+    msg_error(f"'{name}'", quit=False, details=False)
+    l = f"{COL_RED}┃{COL_RESET}"
+    print(f"{l}         ")
+    print(f"{l}        expected: '{old_line}'")
+    print(f"{l}        recieved: '{new_line}'")
+    print(f"")
+
+def compare_results_table(results: list[tuple[bool, Test]]) -> None:
+    """helper - cmd_compare()"""
+    print("------")
+    for failed, test in results:
+        status = f"{COL_RED}X{COL_RESET}" if failed else f"{COL_GREEN}O{COL_RESET}"
+        print(f"{status} {test.name}")
+    print("------")
 
 def cmd_compare():
     new_tests = retrieve_new_tests()
     old_tests = retrieve_old_tests()
+    for nt in new_tests:
+        nt.launch_cmd(debug_print=False)
+
+    results: list[tuple[bool, Test]] = []
 
     for n, o in zip(new_tests, old_tests):
-        for nl, ol in zip(n.stdout.splitlines(), o.stdout.splitlines()):
-            if nl != ol:
-                print("failure")
+        failed = False
 
-    #         # n.launch_cmd(debug_print=False)
-    #         # print(f"NAME: {n.name}")
-    #         # print(n.stdout)
-    #
-    # print("---- old tests ----")
-    # for n in old_tests:
-    #     print(f"NAME: {n.name}")
-    #     print(n.stdout)
+        for nl, ol in zip(n.stdout.splitlines(), o.stdout.splitlines()):
+            msg_info(f"testing '{n.name}'...")
+
+            if nl != ol:
+                comparison_failure_print(name=n.name, new_line=nl, old_line=ol)
+                failed = True
+                break
+
+        results.append((failed, n))
+        if failed:
+            continue
+
+    msg_succ(f"'{n.name}'")
+    compare_results_table(results)
 
 def main():
     args = sys.argv
     if len(args) < 2:
-        msg_error("no argument was provided")
+        msg_error("no argument was provided", quit=True, details=True)
     for a in args[1:]:
         match a:
             case "-h" | "--help":
@@ -205,7 +247,7 @@ def main():
                 _compare_hash()
                 cmd_compare()
             case _:
-                msg_error(f"unknown argument '{a}'")
+                msg_error(f"unknown argument '{a}'", quit=True, details=True)
 
 if __name__ == "__main__":
     main()
