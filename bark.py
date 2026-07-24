@@ -75,14 +75,10 @@ def msg_succ(s: str):
     """debug"""
     print(f"{COL_GREEN}SUCCESS{COL_RESET}  {s}")
 
-def msg_error(s: str, quit: bool, details: bool):
-    d = ""
-    if details:
-        d = " -- use 'bark.py -h' for more details"
-
+def msg_error(s: str, quit: bool, details: bool) -> None:
+    d = " -- use 'bark.py -h' for more details" if details else ""
     print(f"{COL_RED}FAILURE{COL_RESET}  {s}{d}")
-    if quit:
-        sys.exit(1)
+    sys.exit(1) if quit else ()
 
 @dataclass
 class Test:
@@ -188,8 +184,7 @@ def store_test_results(tests: list[Test]):
 def cmd_record():
     """helper - cmd_record()"""
     tests = retrieve_new_tests()
-    for t in tests:
-        t.launch_cmd(debug_print=True)
+    [t.launch_cmd(debug_print=True) for t in tests]
     store_test_results(tests)
     msg_succ("new snapshot written successfully")
 
@@ -219,15 +214,13 @@ def compare_results_table(results: list[tuple[bool, Test]]) -> None:
     for failed, test in results:
         status = f"{COL_RED}X - " if failed else f"{COL_GREEN}O - "
         print(f"{status}{test.name}{COL_RESET}")
-    print("")
-    print(f"Success rate: {success_rate}%")
+    print(f"\nSuccess rate: {success_rate}%")
     print(DIV)
 
 def cmd_compare():
     new_tests = retrieve_new_tests()
     old_tests = retrieve_old_tests()
-    for nt in new_tests:
-        nt.launch_cmd(debug_print=False)
+    [nt.launch_cmd(debug_print=False) for nt in new_tests]
 
     results: list[tuple[bool, Test]] = []
 
