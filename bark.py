@@ -52,15 +52,20 @@ COL_BLUE = "\033[1;34m"
 COL_RESET = "\033[0m"
 
 _HELP_STR = """
-    ./bark.py record
-        * Reads a file 'bark_test' with shell commands to be executed.
-        * Executes each command and saves their respective stdout/err to a file
-          inside a generated directory '.bark'.
+Usage: ./bark.py <flag|cmd>
 
-    ./bark.py compare
-        * Runs the same file of shell commands again and compares their
-          stdout/err to their recorded counterparts in the '.bark' directory.
-        * Prints a summary."""
+-h, --help
+    * Show help.
+
+record
+    * Reads a file 'bark_test' with shell commands to be executed.
+    * Executes each command and saves their respective stdout/err to a file
+      inside a generated directory '.bark'.
+
+compare
+    * Runs the same file of shell commands again and compares their
+      stdout/err to their recorded counterparts in the '.bark' directory.
+    * Prints a summary."""
 
 def msg_info(s: str):
     """debug"""
