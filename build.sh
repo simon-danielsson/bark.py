@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
 
-./bark.py
+cd $HOME/dev/python/bark.py/tests
+../bark.py record
+../bark.py compare
+
 
