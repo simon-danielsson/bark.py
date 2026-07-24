@@ -47,7 +47,7 @@ Choose a directory in your codebase where you want to use *bark.py* -
 create a new file called `bark_test` in that directory:
 ``` bash
 cd my/program/test
-curl -O https://raw.githubusercontent.com/simon-danielsson/bark.py/refs/heads/main/bark.py?token=GHSAT0AAAAAADS43HVIDV2WI4PDV5YOU3CM2TD4TWA
+curl -O https://raw.githubusercontent.com/simon-danielsson/bark.py/refs/heads/main/bark.py
 touch bark_test
 ```
   
