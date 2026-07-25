@@ -12,6 +12,7 @@
 <p align="center">
   <a href="#info">Info</a> •
   <a href="#usage">Usage</a> •
+  <a href="#screenshots">Screenshots</a> •
   <a href="#license">License</a>
 </p>  
   
@@ -80,6 +81,13 @@ simply `cd` back into the directory of your `bark_test` file and run `./bark.py
 compare` - to compare your current output with what you had previously recorded.
     
 See the [tests](./tests) directory for a simple showcase
+  
+---
+<div id="screenshots"></div>
+  
+## Screenshots
+  
+![screenshot](./media/screenshot.png)
   
 ---
 <div id="license"></div>
