@@ -1,4 +1,6 @@
-<h1 align="center">bark.py</h1>
+<p align="center">
+    <img src="media/logo.png" alt="bark" width="112"/>
+</p>
   
 <p align="center">
   <em>A minimal snapshot testing tool<br>to harden the bark of your code.</em>
