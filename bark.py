@@ -35,7 +35,7 @@ Requirements: Python 3.10+
 
 """
 
-import sys, subprocess, os, shutil, hashlib
+import sys, subprocess, os, shutil, hashlib, difflib
 from datetime import datetime as dt
 from dataclasses import dataclass
 from pathlib import Path
@@ -50,6 +50,7 @@ HASH = f"{BARK_DIR}/hash"
 FIELD = "▍"
 DIV = "┈" * 60
 COL_RED = "\033[1;31m"
+COL_DIFF = "\033[1;4;31m"
 COL_GREEN = "\033[1;32m"
 COL_BLUE = "\033[1;34m"
 COL_RESET = "\033[0m"
@@ -187,15 +188,28 @@ def cmd_record() -> None:
 def cmd_help() -> None:
     print(_HELP_STR[1:])
 
+def diff_(old: str, new: str) -> tuple[str, str]:
+    """helper - comparison_failure_print()"""
+    matcher = difflib.SequenceMatcher(lambda x: x in " ", old, new)
+    buf = []
+    for tag, _, _, j1, j2 in matcher.get_opcodes():
+        text = new[j1:j2]
+        if tag == "equal":
+            buf.append(text)
+        else:
+            buf.append(COL_DIFF + text + COL_RESET)
+    return f"Expected => {old}", f"Received => {"".join(buf)}"
+
 def comparison_failure_print(name: str, old_line: str, new_line: str) -> None:
     """helper - cmd_compare()"""
     l = f"{COL_RED}{FIELD}{COL_RESET}"
     ol = old_line[:-1] if old_line[-1] == "\n" else old_line
     nl = new_line[:-1] if new_line[-1] == "\n" else new_line
+    expected, actual = diff_(ol, nl)
     print(f"{COL_RED}{FIELD}FAILURE {COL_RESET}'{name}'")
     print(f"{l}")
-    print(f"{l:<15}expected => '{ol}'")
-    print(f"{l:<15}actual   => '{nl}'")
+    print(f"{l:<15}{expected}")
+    print(f"{l:<15}{actual}")
     print(f"{l}")
 
 def time_total() -> float:
