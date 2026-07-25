@@ -48,7 +48,7 @@ BARK_DIR = f"{CWD}/.bark"
 HASH = f"{BARK_DIR}/hash"
 
 FIELD = "▍"
-DIV = "┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈"
+DIV = "┈" * 60
 COL_RED = "\033[1;31m"
 COL_GREEN = "\033[1;32m"
 COL_BLUE = "\033[1;34m"
@@ -91,7 +91,7 @@ class Test:
     stdout: str = ""
 
     def shell_cmd_as_str(self):
-        return " ".join(self.shell_cmd)
+        return " ".join(self.shell_cmd).strip()
 
     def launch_cmd(self, debug_print: bool):
         """helper - cmd_record()"""
@@ -196,13 +196,13 @@ def cmd_help():
 
 def comparison_failure_print(name: str, old_line: str, new_line: str):
     """helper - cmd_compare()"""
-    l = f"{COL_RED}▍{COL_RESET}"
+    l = f"{COL_RED}{FIELD}{COL_RESET}"
     ol = old_line[:-1] if old_line[-1] == "\n" else old_line
     nl = new_line[:-1] if new_line[-1] == "\n" else new_line
-    msg_error(f"'{name}'", quit=False, details=False)
+    print(f"{COL_RED}{FIELD}FAILURE {COL_RESET}'{name}'")
     print(f"{l}")
-    print(f"{l:<20}expected: '{ol}'")
-    print(f"{l:<20}recieved: '{nl}'")
+    print(f"{l:<15}expected => '{ol}'")
+    print(f"{l:<15}actual   => '{nl}'")
     print(f"")
 
 def time_total():
@@ -219,8 +219,8 @@ def compare_results_table(results: list[tuple[bool, Test]]) -> None:
     success_rate = 100 if failures == 0 else failures / len(results) * 100
 
     for failed, test in results:
-        status = f"{COL_RED}X - " if failed else f"{COL_GREEN}O - "
-        print(f"{status}{test.name}{COL_RESET}")
+        status = f"{COL_RED}{FIELD}F" if failed else f"{COL_GREEN}S"
+        print(f"{status:<10} {test.name:<26}{COL_RESET}{test.shell_cmd_as_str()}")
     print(f"\nSuccess rate  : {success_rate}%")
     print(f"Total time    : {time_total():.4} sec")
     print(DIV)
