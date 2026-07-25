@@ -223,12 +223,12 @@ def compare_results_table(results: list[tuple[bool, Test]]) -> None:
     failures = 0
     for failed, _ in results:
         failures += 1 if failed else 0
-    success_rate = 100 if failures == 0 else failures / len(results) * 100
+    failure_rate = failures / len(results) * 100
 
     for failed, test in results:
         status = f"{COL_RED}{FIELD}F" if failed else f"{COL_GREEN}S"
         print(f"{status:<10} {test.name:<26}{COL_RESET}{test.shell_cmd_as_str()}")
-    print(f"\nSuccess rate  : {success_rate}%")
+    print(f"\nFailure rate  : {failure_rate}%")
     print(f"Total time    : {time_total():.4} sec")
     print(DIV)
 
