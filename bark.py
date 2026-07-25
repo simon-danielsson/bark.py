@@ -78,7 +78,7 @@ def msg_succ(s: str):
     """debug"""
     print(f"{COL_GREEN}SUCCESS{COL_RESET}  {s}")
 
-def msg_error(s: str, quit: bool, details: bool) -> None:
+def msg_error(s: str, quit: bool = True, details: bool = True) -> None:
     d = " -- use 'bark.py -h' for more details" if details else ""
     print(f"{COL_RED}FAILURE{COL_RESET}  {s}{d}")
     sys.exit(1) if quit else ()
@@ -90,10 +90,10 @@ class Test:
     id: int
     stdout: str = ""
 
-    def shell_cmd_as_str(self):
+    def shell_cmd_as_str(self) -> str:
         return " ".join(self.shell_cmd).strip()
 
-    def launch_cmd(self, debug_print: bool):
+    def launch_cmd(self, debug_print: bool) -> None:
         """helper - cmd_record()"""
         try:
             if debug_print:
@@ -106,14 +106,10 @@ class Test:
                     text=True,
                     ).stdout
         except FileNotFoundError:
-            msg_error(
-                    f"file not found '{self.shell_cmd_as_str()}'", quit=True, details=True
-                    )
+            msg_error(f"file not found '{self.shell_cmd_as_str()}'")
         except subprocess.CalledProcessError as e:
             msg_error(
                     f"failed to execute '{self.shell_cmd_as_str()}': {e}",
-                    quit=True,
-                    details=True,
                     )
 
 def read_file(file: str | Path) -> list[str]:
@@ -122,14 +118,13 @@ def read_file(file: str | Path) -> list[str]:
     except OSError:
         msg_error(
                 f"failed to open '{file}' (must be inside working dir)",
-                quit=True,
                 details=False,
                 )
     return f
 
 def retrieve_old_tests() -> list[Test]:
     if not os.path.exists(BARK_DIR):
-        msg_error(f"dir '{BARK_DIR}' doesn't exist", quit=True, details=True)
+        msg_error(f"dir '{BARK_DIR}' doesn't exist")
 
     tests = []
     for child in Path(BARK_DIR).iterdir():
@@ -167,11 +162,9 @@ def _compare_hash() -> None:
     with open(HASH, "r", encoding="utf-8") as f:
         old_hash = f.read().strip()
     if current_hash != old_hash:
-        msg_error(
-                f"'{BARK_TEST}' has changed since last recording", quit=True, details=False
-                )
+        msg_error(f"'{BARK_TEST}' has changed since last recording", quit=True)
 
-def store_test_results(tests: list[Test]):
+def store_test_results(tests: list[Test]) -> None:
     """helper - cmd_record()"""
     if os.path.exists(BARK_DIR):
         msg_info("overwriting old snapshot...")
@@ -184,17 +177,17 @@ def store_test_results(tests: list[Test]):
     with open(f"{HASH}", "w", encoding="utf-8") as f:
         f.write(generate_hash_from_file(BARK_TEST))
 
-def cmd_record():
+def cmd_record() -> None:
     """helper - cmd_record()"""
     tests = retrieve_new_tests()
     [t.launch_cmd(debug_print=True) for t in tests]
     store_test_results(tests)
     msg_succ("new snapshot written successfully")
 
-def cmd_help():
+def cmd_help() -> None:
     print(_HELP_STR[1:])
 
-def comparison_failure_print(name: str, old_line: str, new_line: str):
+def comparison_failure_print(name: str, old_line: str, new_line: str) -> None:
     """helper - cmd_compare()"""
     l = f"{COL_RED}{FIELD}{COL_RESET}"
     ol = old_line[:-1] if old_line[-1] == "\n" else old_line
@@ -205,7 +198,7 @@ def comparison_failure_print(name: str, old_line: str, new_line: str):
     print(f"{l:<15}actual   => '{nl}'")
     print(f"{l}")
 
-def time_total():
+def time_total() -> float:
     now = dt.now()
     return (now - GLBL_START_TIME).total_seconds()
 
@@ -225,7 +218,7 @@ def compare_results_table(results: list[tuple[bool, Test]]) -> None:
     print(f"Total time    : {time_total():.4} sec")
     print(DIV)
 
-def cmd_compare():
+def cmd_compare() -> None:
     new_tests = retrieve_new_tests()
     old_tests = retrieve_old_tests()
     [nt.launch_cmd(debug_print=False) for nt in new_tests]
@@ -248,10 +241,10 @@ def cmd_compare():
 
     compare_results_table(results)
 
-def main():
+def main() -> None:
     args = sys.argv
     if len(args) < 2:
-        msg_error("no argument was provided", quit=True, details=True)
+        msg_error("no argument was provided")
     for a in args[1:]:
         match a:
             case "-h" | "--help":
@@ -262,7 +255,7 @@ def main():
                 _compare_hash()
                 cmd_compare()
             case _:
-                msg_error(f"unknown argument '{a}'", quit=True, details=True)
+                msg_error(f"unknown argument '{a}'")
 
 if __name__ == "__main__":
     main()
