@@ -5,6 +5,6 @@ int main(int argc, char **argv) {
         printf("No arguments were found");
         return 1;
     }
-    printf("Hello world, again!\n");
+    printf("Hello world!\n");
     return 0;
 }

@@ -203,7 +203,7 @@ def comparison_failure_print(name: str, old_line: str, new_line: str):
     print(f"{l}")
     print(f"{l:<15}expected => '{ol}'")
     print(f"{l:<15}actual   => '{nl}'")
-    print(f"")
+    print(f"{l}")
 
 def time_total():
     now = dt.now()
