@@ -121,7 +121,9 @@ def read_file(file: str | Path) -> list[str]:
                 f"failed to open '{file}' (must be inside working dir)",
                 details=False,
                 )
-    return f
+
+    f = filter(lambda l: not l.startswith("#"), f)
+    return list(f)
 
 def retrieve_old_tests() -> list[Test]:
     if not os.path.exists(BARK_DIR):
