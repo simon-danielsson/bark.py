@@ -137,10 +137,11 @@ def retrieve_old_tests() -> list[Test]:
                     Test(
                         shell_cmd=[],
                         name=file[0][:-1],
-                        stdout="".join(file[-1:]),
+                        stdout="".join(file[1:]),
                         id=int(child.name),
                         )
                     )
+    tests.sort(key=lambda t: t.id)
     return tests
 
 def retrieve_new_tests() -> list[Test]:
