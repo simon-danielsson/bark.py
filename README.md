@@ -58,6 +58,7 @@ Within `bark_test` you write the commands of each test you wish to execute, one 
 ``` terminal
 add_nums() | gcc -o main main.c && ./main --test_nums
 print_list() | gcc -o main main.c && ./main --test_print
+# bark.py supports comments! The parser skips all lines starting with '#'.
 ```
   
 ### CLI
